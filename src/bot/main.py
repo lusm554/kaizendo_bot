@@ -1,9 +1,13 @@
 import os
+import aiohttp
 from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from dotenv import load_dotenv
 from bot.handlers import basic
+from bot.handlers import habits
+from bot.services.llm import LLMService
+from bot.services.storage import StorageService
 
 load_dotenv()
 
@@ -23,7 +27,12 @@ def main() -> None:
     bot = Bot(token=BOT_TOKEN)
     dp = Dispatcher()
     dp.include_router(basic.router)
+    dp.include_router(habits.router)
     dp.startup.register(on_startup)
+
+    http_session = aiohttp.ClientSession()
+    dp["llm"] = LLMService(session=http_session)
+    dp["storage"] = StorageService()
 
     app = web.Application()
     SimpleRequestHandler(dispatcher=dp, bot=bot, secret_token=WEBHOOK_SECRET).register(app, path=WEBHOOK_PATH)
