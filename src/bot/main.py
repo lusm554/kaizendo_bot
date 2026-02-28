@@ -18,21 +18,20 @@ PORT = int(os.environ.get("PORT", 8080))
 WEBHOOK_PATH = "/webhook"
 
 
-async def on_startup(bot: Bot) -> None:
-    if WEBHOOK_URL:
-        await bot.set_webhook(WEBHOOK_URL + WEBHOOK_PATH, secret_token=WEBHOOK_SECRET)
-
-
 def main() -> None:
     bot = Bot(token=BOT_TOKEN)
     dp = Dispatcher()
     dp.include_router(basic.router)
     dp.include_router(habits.router)
-    dp.startup.register(on_startup)
 
-    http_session = aiohttp.ClientSession()
-    dp["llm"] = LLMService(session=http_session)
-    dp["storage"] = StorageService()
+    async def on_startup(bot: Bot) -> None:
+        if WEBHOOK_URL:
+            await bot.set_webhook(WEBHOOK_URL + WEBHOOK_PATH, secret_token=WEBHOOK_SECRET)
+        http_session = aiohttp.ClientSession()
+        dp["llm"] = LLMService(session=http_session)
+        dp["storage"] = StorageService()
+
+    dp.startup.register(on_startup)
 
     app = web.Application()
     SimpleRequestHandler(dispatcher=dp, bot=bot, secret_token=WEBHOOK_SECRET).register(app, path=WEBHOOK_PATH)
