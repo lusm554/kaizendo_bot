@@ -57,6 +57,9 @@ curl "https://api.telegram.org/bot${BOT_TOKEN}/getWebhookInfo"
 
 # GitHub Actions (CI/CD)
 
+> **Важно:** при любом изменении, которое затрагивает деплой (новые env-переменные,
+> зависимости, команды запуска, порты), проверь нужно ли обновить `.github/workflows/ci-cd.yml`.
+
 Воркфлоу: `.github/workflows/ci-cd.yml`
 - `test` job: запускает `uv run pytest -v` на каждый push/PR
 - `deploy` job: деплоит в Cloud Run только при push в master и после успешных тестов
