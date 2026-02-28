@@ -7,4 +7,4 @@ from bot.handlers.basic import ping_handler
 async def test_ping_replies_pong():
     message = AsyncMock()
     await ping_handler(message)
-    message.answer.assert_called_once_with("pong")
+    message.answer.assert_called_once_with("pong!")
