@@ -21,6 +21,12 @@ uv run pytest -v
 - Регион: `us-central1`
 - URL: `https://kaizendo-bot-522564501368.us-central1.run.app`
 - Webhook: `<URL>/webhook` (регистрируется автоматически при старте)
+- Firestore: база `(default)` создана в `us-central1`, коллекция `habits`
+
+Создать Firestore базу (один раз, уже сделано):
+```bash
+gcloud firestore databases create --project=kaizendo-bot --location=us-central1
+```
 
 Пересборка и деплой из source:
 ```bash
