@@ -52,3 +52,29 @@ gcloud run logs read --service kaizendo-bot --region us-central1 --project kaize
 ```bash
 curl "https://api.telegram.org/bot${BOT_TOKEN}/getWebhookInfo"
 ```
+
+# GitHub Actions (CI/CD)
+
+Воркфлоу: `.github/workflows/ci-cd.yml`
+- `test` job: запускает `uv run pytest -v` на каждый push/PR
+- `deploy` job: деплоит в Cloud Run только при push в master и после успешных тестов
+
+Необходимые секреты в репозитории (Settings → Secrets → Actions):
+- `GCP_SA_KEY` — JSON-ключ GCP Service Account
+- `BOT_TOKEN` — токен бота
+- `WEBHOOK_SECRET` — секрет вебхука
+
+Просмотр запусков через `gh` CLI (авторизован как `lusm554`):
+```bash
+# Список последних запусков
+gh run list --repo lusm554/kaizendo_bot
+
+# Детали запуска
+gh run view <run-id>
+
+# Логи упавшего запуска
+gh run view <run-id> --log-failed
+
+# Смотреть в реальном времени
+gh run watch <run-id>
+```
