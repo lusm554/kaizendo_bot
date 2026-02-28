@@ -9,13 +9,14 @@ load_dotenv()
 
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL", "")
+WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET") or None
 PORT = int(os.environ.get("PORT", 8080))
 WEBHOOK_PATH = "/webhook"
 
 
 async def on_startup(bot: Bot) -> None:
     if WEBHOOK_URL:
-        await bot.set_webhook(WEBHOOK_URL + WEBHOOK_PATH)
+        await bot.set_webhook(WEBHOOK_URL + WEBHOOK_PATH, secret_token=WEBHOOK_SECRET)
 
 
 def main() -> None:
@@ -25,7 +26,7 @@ def main() -> None:
     dp.startup.register(on_startup)
 
     app = web.Application()
-    SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path=WEBHOOK_PATH)
+    SimpleRequestHandler(dispatcher=dp, bot=bot, secret_token=WEBHOOK_SECRET).register(app, path=WEBHOOK_PATH)
     setup_application(app, dp, bot=bot)
     web.run_app(app, host="0.0.0.0", port=PORT)
 
