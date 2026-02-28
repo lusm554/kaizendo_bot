@@ -25,12 +25,14 @@ uv run pytest -v
 Пересборка и деплой из source:
 ```bash
 BOT_TOKEN=$(grep BOT_TOKEN .env | cut -d= -f2)
+WEBHOOK_SECRET=$(grep WEBHOOK_SECRET .env | cut -d= -f2)
 gcloud run deploy kaizendo-bot \
   --source . \
   --region us-central1 \
   --project kaizendo-bot \
   --allow-unauthenticated \
-  --set-env-vars "BOT_TOKEN=${BOT_TOKEN},WEBHOOK_URL=https://kaizendo-bot-522564501368.us-central1.run.app"
+  --max-instances 1 \
+  --set-env-vars "BOT_TOKEN=${BOT_TOKEN},WEBHOOK_URL=https://kaizendo-bot-522564501368.us-central1.run.app,WEBHOOK_SECRET=${WEBHOOK_SECRET}"
 ```
 
 Только обновить env-переменные (без пересборки):
@@ -38,7 +40,7 @@ gcloud run deploy kaizendo-bot \
 gcloud run services update kaizendo-bot \
   --region us-central1 \
   --project kaizendo-bot \
-  --set-env-vars "BOT_TOKEN=...,WEBHOOK_URL=..."
+  --set-env-vars "BOT_TOKEN=...,WEBHOOK_URL=...,WEBHOOK_SECRET=..."
 ```
 
 Логи:
