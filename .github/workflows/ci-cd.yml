@@ -43,4 +43,4 @@ jobs:
             --project kaizendo-bot \
             --allow-unauthenticated \
             --max-instances 1 \
-            --set-env-vars "BOT_TOKEN=${{ secrets.BOT_TOKEN }},WEBHOOK_URL=https://kaizendo-bot-522564501368.us-central1.run.app,WEBHOOK_SECRET=${{ secrets.WEBHOOK_SECRET }}"
+            --set-env-vars "BOT_TOKEN=${{ secrets.BOT_TOKEN }},WEBHOOK_URL=https://kaizendo-bot-522564501368.us-central1.run.app,WEBHOOK_SECRET=${{ secrets.WEBHOOK_SECRET }},OPENROUTER_API_KEY=${{ secrets.OPENROUTER_API_KEY }}"

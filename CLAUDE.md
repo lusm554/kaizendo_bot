@@ -26,21 +26,23 @@ uv run pytest -v
 ```bash
 BOT_TOKEN=$(grep BOT_TOKEN .env | cut -d= -f2)
 WEBHOOK_SECRET=$(grep WEBHOOK_SECRET .env | cut -d= -f2)
+OPENROUTER_API_KEY=$(grep OPENROUTER_API_KEY .env | cut -d= -f2)
 gcloud run deploy kaizendo-bot \
   --source . \
   --region us-central1 \
   --project kaizendo-bot \
   --allow-unauthenticated \
   --max-instances 1 \
-  --set-env-vars "BOT_TOKEN=${BOT_TOKEN},WEBHOOK_URL=https://kaizendo-bot-522564501368.us-central1.run.app,WEBHOOK_SECRET=${WEBHOOK_SECRET}"
+  --set-env-vars "BOT_TOKEN=${BOT_TOKEN},WEBHOOK_URL=https://kaizendo-bot-522564501368.us-central1.run.app,WEBHOOK_SECRET=${WEBHOOK_SECRET},OPENROUTER_API_KEY=${OPENROUTER_API_KEY}"
 ```
 
-Только обновить env-переменные (без пересборки):
+Только обновить одну env-переменную (без пересборки):
 ```bash
+OPENROUTER_API_KEY=$(grep OPENROUTER_API_KEY .env | cut -d= -f2)
 gcloud run services update kaizendo-bot \
   --region us-central1 \
   --project kaizendo-bot \
-  --set-env-vars "BOT_TOKEN=...,WEBHOOK_URL=...,WEBHOOK_SECRET=..."
+  --update-env-vars "OPENROUTER_API_KEY=${OPENROUTER_API_KEY}"
 ```
 
 Логи:
@@ -63,6 +65,7 @@ curl "https://api.telegram.org/bot${BOT_TOKEN}/getWebhookInfo"
 - `GCP_SA_KEY` — JSON-ключ GCP Service Account
 - `BOT_TOKEN` — токен бота
 - `WEBHOOK_SECRET` — секрет вебхука
+- `OPENROUTER_API_KEY` — ключ OpenRouter для LLM-парсинга
 
 Просмотр запусков через `gh` CLI (авторизован как `lusm554`):
 ```bash
