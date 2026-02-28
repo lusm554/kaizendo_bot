@@ -7,4 +7,4 @@ router = Router()
 
 @router.message(Command("ping"))
 async def ping_handler(message: Message) -> None:
-    await message.answer("pong")
+    await message.answer("pong!")
