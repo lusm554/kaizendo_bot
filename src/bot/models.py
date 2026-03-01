@@ -1,9 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
 class HabitData:
-    habit_type: str          # e.g. "reading"
-    author: str              # e.g. "Эрих Фромм"
-    book_title: str          # e.g. "Искусство Любить"
-    duration_minutes: int    # e.g. 30
+    habit_type: str      # "чтение", "йога", "сон", "дневник", ...
+    summary: str         # LLM-generated: "Чтение — 30 мин — Фромм «Искусство любить»"
+    details: dict = field(default_factory=dict)  # arbitrary structured data
