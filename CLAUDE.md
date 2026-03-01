@@ -21,11 +21,35 @@ uv run pytest -v
 - Регион: `us-central1`
 - URL: `https://kaizendo-bot-522564501368.us-central1.run.app`
 - Webhook: `<URL>/webhook` (регистрируется автоматически при старте)
-- Firestore: база `(default)` создана в `us-central1`, коллекция `habits`
+- Firestore: база `(default)` создана в `us-central1`, коллекция `habit_events`
 
 Создать Firestore базу (один раз, уже сделано):
 ```bash
 gcloud firestore databases create --project=kaizendo-bot --location=us-central1
+```
+
+Создать составные индексы (один раз, уже сделано):
+```bash
+gcloud firestore indexes composite create \
+  --collection-group=habit_events \
+  --field-config field-path=habit_id,order=ascending \
+  --field-config field-path=timestamp,order=descending \
+  --database="(default)" \
+  --project=kaizendo-bot \
+  --async
+
+gcloud firestore indexes composite create \
+  --collection-group=habit_events \
+  --field-config field-path=date,order=ascending \
+  --field-config field-path=timestamp,order=descending \
+  --database="(default)" \
+  --project=kaizendo-bot \
+  --async
+```
+
+Проверить статус индексов:
+```bash
+gcloud firestore indexes composite list --project=kaizendo-bot --database="(default)"
 ```
 
 Пересборка и деплой из source:
@@ -53,7 +77,7 @@ gcloud run services update kaizendo-bot \
 
 Логи:
 ```bash
-gcloud run logs read --service kaizendo-bot --region us-central1 --project kaizendo-bot
+gcloud run services logs read kaizendo-bot --region us-central1 --project kaizendo-bot
 ```
 
 Проверить webhook:
