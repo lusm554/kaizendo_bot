@@ -29,7 +29,9 @@ def main() -> None:
             await bot.set_webhook(WEBHOOK_URL + WEBHOOK_PATH, secret_token=WEBHOOK_SECRET)
         http_session = aiohttp.ClientSession()
         dp["llm"] = LLMService(session=http_session)
-        dp["storage"] = StorageService()
+        storage = StorageService()
+        await storage.load_known_types()
+        dp["storage"] = storage
 
     dp.startup.register(on_startup)
 
