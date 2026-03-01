@@ -1,0 +1,60 @@
+# kaizendo_bot
+
+Telegram-бот для трекинга привычек одного пользователя через plain text.
+Вдохновлён книгой «Атомные привычки» — маленькие ежедневные шаги складываются в результат.
+Хранит историю как поток неизменяемых событий (event sourcing) в Firestore.
+
+## Поток сообщений
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant B as Bot
+    participant L as LLM
+    participant F as Firestore
+
+    U->>B: "читал фромма 30 мин"
+    B->>L: parse_habit(text)
+    L-->>B: HabitData
+    B->>U: ✓ Чтение — 30 мин — Фромм<br/>↩ ответь чтобы исправить
+    B->>F: log_event(type="logged", bot_message_id=999)
+
+    U->>B: reply: "нет, 45 мин"
+    B->>F: find_habit_by_message_id(999)
+    F-->>B: (habit_id, logged_doc)
+    B->>L: correct_habit(original, correction, current)
+    L-->>B: HabitData(45 мин)
+    B->>U: edit_text("✓ Чтение — 45 мин...")
+    B->>F: log_event(type="corrected")
+
+    U->>B: reply: "удали"
+    B->>U: edit_text("🗑 Удалено [Фромм «...» — 45 мин]")
+    B->>F: log_event(type="deleted")
+```
+
+## Жизненный цикл привычки
+
+```mermaid
+stateDiagram-v2
+    [*] --> logged : пользователь отправляет текст
+    logged --> corrected : reply с правкой
+    corrected --> corrected : ещё одна правка
+    logged --> deleted : reply "удали"
+    corrected --> deleted : reply "удали"
+    deleted --> [*]
+```
+
+## Ключевые файлы
+
+```
+src/bot/
+├── main.py                  # точка входа, настройка webhook
+├── models.py                # HabitData dataclass
+├── handlers/
+│   ├── basic.py             # /start, /ping, /today
+│   └── habit.py             # обработка входящих сообщений и reply
+└── services/
+    ├── llm.py               # LLMService — парсинг и коррекция через OpenRouter
+    └── storage.py           # StorageService — запись/чтение событий в Firestore
+tests/
+```
