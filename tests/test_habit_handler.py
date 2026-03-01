@@ -183,7 +183,10 @@ async def test_correction_handler_deletes_on_keyword():
     call_kwargs = storage.log_event.call_args.kwargs
     assert call_kwargs["event_type"] == "deleted"
     assert call_kwargs["data"] is None
-    message.reply_to_message.edit_text.assert_called_once_with("🗑 Удалено")
+    message.reply_to_message.edit_text.assert_called_once_with(
+        "🗑 Удалено [Эрих Фромм «Искусство Любить» — 30 мин]",
+        parse_mode="HTML",
+    )
 
 
 @pytest.mark.asyncio

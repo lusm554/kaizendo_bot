@@ -67,7 +67,12 @@ async def correction_handler(
             user_id=message.from_user.id,
             date=_today_date(),
         )
-        await message.reply_to_message.edit_text("🗑 Удалено")
+        deleted_text = (
+            f"🗑 Удалено [{html.escape(current_doc.get('author', '?'))} "
+            f"«{html.escape(current_doc.get('book_title', '?'))}» "
+            f"— {current_doc.get('duration_minutes', '?')} мин]"
+        )
+        await message.reply_to_message.edit_text(deleted_text, parse_mode="HTML")
         return
 
     current = _habit_from_doc(current_doc)
