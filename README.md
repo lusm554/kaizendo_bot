@@ -35,13 +35,13 @@ sequenceDiagram
 ## Жизненный цикл привычки
 
 ```mermaid
-stateDiagram-v2
-    [*] --> logged : пользователь отправляет текст
-    logged --> corrected : reply с правкой
-    corrected --> corrected : ещё одна правка
-    logged --> deleted : reply "удали"
-    corrected --> deleted : reply "удали"
-    deleted --> [*]
+flowchart TD
+    S(( )) -->|новый текст| logged
+    logged -->|reply с правкой| corrected
+    corrected -->|ещё одна правка| corrected
+    logged -->|reply «удали»| deleted
+    corrected -->|reply «удали»| deleted
+    deleted --> E(( ))
 ```
 
 ## Ключевые файлы
