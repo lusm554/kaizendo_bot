@@ -12,10 +12,9 @@ MODEL = "google/gemini-2.5-flash-lite"
 SYSTEM_PROMPT = """You are a habit tracking assistant. Extract habit data from the user's message.
 
 Return a JSON object with these fields:
-- habit_type: string (e.g. "reading", "exercise", "meditation")
-- author: string (full normalized name, e.g. "Эрих Фромм")
-- book_title: string (normalized title, e.g. "Искусство Любить")
-- duration_minutes: integer
+- habit_type: string — normalized habit type in Russian (e.g. "чтение", "йога", "сон", "калистеника", "дневник")
+- summary: string — short confirmation line in Russian (e.g. "Чтение — 30 мин — Эрих Фромм «Искусство Любить»")
+- details: object — structured data relevant to the habit type (e.g. {"author": "...", "book_title": "...", "duration_minutes": 30})
 
 If the message does not describe a completed habit, return null.
 Return only valid JSON, no markdown fences."""
@@ -24,10 +23,9 @@ CORRECTION_SYSTEM_PROMPT = """You are a habit tracking assistant. The user is co
 Given the original message, the current parsed data, and the user's correction, return updated JSON.
 
 Return a JSON object with these fields:
-- habit_type: string
-- author: string (full normalized name)
-- book_title: string (normalized title)
-- duration_minutes: integer
+- habit_type: string — normalized habit type in Russian
+- summary: string — updated short confirmation line in Russian
+- details: object — updated structured data
 
 If you cannot parse the correction, return null.
 Return only valid JSON, no markdown fences."""
@@ -51,9 +49,8 @@ def _dict_to_habit(data: dict) -> HabitData | None:
     try:
         return HabitData(
             habit_type=str(data["habit_type"]),
-            author=str(data["author"]),
-            book_title=str(data["book_title"]),
-            duration_minutes=int(data["duration_minutes"]),
+            summary=str(data["summary"]),
+            details=data.get("details") or {},
         )
     except (KeyError, ValueError, TypeError):
         return None
@@ -108,9 +105,8 @@ class LLMService:
         current_json = json.dumps(
             {
                 "habit_type": current.habit_type,
-                "author": current.author,
-                "book_title": current.book_title,
-                "duration_minutes": current.duration_minutes,
+                "summary": current.summary,
+                "details": current.details,
             },
             ensure_ascii=False,
         )
