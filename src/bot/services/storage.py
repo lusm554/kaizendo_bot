@@ -3,11 +3,30 @@ from google.cloud import firestore
 from bot.models import HabitData
 
 COLLECTION = "habit_events"
+META_DOC = "meta/known_habit_types"
 
 
 class StorageService:
     def __init__(self, db: firestore.AsyncClient | None = None):
         self._db = db or firestore.AsyncClient()
+        self._known_types: set[str] = set()
+
+    async def load_known_types(self) -> None:
+        """Load known habit types from Firestore into local cache."""
+        doc = await self._db.document(META_DOC).get()
+        if doc.exists:
+            self._known_types = set(doc.to_dict().get("types", []))
+
+    def is_known_type(self, habit_type: str) -> bool:
+        """Check if a habit type is already known (cached)."""
+        return habit_type in self._known_types
+
+    async def add_known_type(self, habit_type: str) -> None:
+        """Add a new habit type to Firestore and local cache."""
+        self._known_types.add(habit_type)
+        await self._db.document(META_DOC).set(
+            {"types": firestore.ArrayUnion([habit_type])}, merge=True
+        )
 
     async def log_event(
         self,
@@ -23,24 +42,14 @@ class StorageService:
 
         Each call creates a new document — nothing is overwritten (event sourcing).
         Returns the Firestore document ID of the created event.
-
-        Args:
-            habit_id: UUID shared across all events for the same habit instance.
-            event_type: One of "logged", "corrected", "deleted".
-            data: Habit payload. Pass None for "deleted" events.
-            raw_text: Original user message. Only set for "logged" events.
-            bot_message_id: Telegram message ID of the bot's reply. Only set for "logged" events.
-            user_id: Telegram user ID of the author.
-            date: UTC date string "YYYY-MM-DD" for daily grouping.
         """
         doc_ref = self._db.collection(COLLECTION).document()
         await doc_ref.set({
             "habit_id": habit_id,
             "event_type": event_type,
             "habit_type": data.habit_type if data else None,
-            "author": data.author if data else None,
-            "book_title": data.book_title if data else None,
-            "duration_minutes": data.duration_minutes if data else None,
+            "summary": data.summary if data else None,
+            "details": data.details if data else None,
             "raw_text": raw_text,
             "bot_message_id": bot_message_id,
             "user_id": user_id,
@@ -53,7 +62,6 @@ class StorageService:
         """Find the "logged" event that produced the given bot message.
 
         Returns (habit_id, event_doc) or None if not found.
-        Used to link a user's reply back to the original habit.
         """
         query = (
             self._db.collection(COLLECTION)
@@ -65,11 +73,7 @@ class StorageService:
         return None
 
     async def get_current_state(self, habit_id: str) -> dict | None:
-        """Return the latest event for habit_id, or None if deleted/not found.
-
-        Reads the most recent event. If its event_type is "deleted", returns None
-        (the habit no longer exists). Otherwise returns the event dict as current state.
-        """
+        """Return the latest event for habit_id, or None if deleted/not found."""
         query = (
             self._db.collection(COLLECTION)
             .where("habit_id", "==", habit_id)
@@ -82,11 +86,7 @@ class StorageService:
         return None
 
     async def get_today_habits(self, date: str) -> list[dict]:
-        """Return all active habits for the given UTC date.
-
-        Groups events by habit_id client-side, keeping only the latest event per habit.
-        Excludes habits whose latest event_type is "deleted".
-        """
+        """Return all active habits for the given UTC date."""
         query = (
             self._db.collection(COLLECTION)
             .where("date", "==", date)
