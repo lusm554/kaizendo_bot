@@ -77,6 +77,10 @@ class LLMService:
             return data["choices"][0]["message"]["content"]
 
     async def parse_habit(self, text: str) -> HabitData | None:
+        """Parse a free-form user message into structured HabitData.
+
+        Returns None if the message does not describe a completed habit.
+        """
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": text},
@@ -92,6 +96,15 @@ class LLMService:
     async def correct_habit(
         self, original_text: str, correction_text: str, current: HabitData
     ) -> HabitData | None:
+        """Apply a user's correction to an existing habit entry.
+
+        Args:
+            original_text: The user's original message that was parsed into `current`.
+            correction_text: The user's follow-up correction message.
+            current: The currently stored HabitData to be updated.
+
+        Returns updated HabitData, or None if the correction could not be parsed.
+        """
         current_json = json.dumps(
             {
                 "habit_type": current.habit_type,
